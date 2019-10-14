@@ -10,16 +10,26 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 
+import com.google.gson.Gson;
+
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class AttendanceActivity extends AppCompatActivity implements View.OnClickListener {
+
+    String LOG = "logtag";
 
     ImageView imageView;
     Button button;
@@ -27,6 +37,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
     static final int REQUEST_TAKE_PHOTO = 1;
 
     String currentPhotoPath;
+
+    Attendance attendance;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +53,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
     private void init() {
         imageView = findViewById(R.id.attendance_image);
         button = findViewById(R.id.attendance_capture_image);
+
+        attendance = new Attendance();
     }
 
     @Override
@@ -87,6 +101,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
         // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
+        Log.i(LOG, currentPhotoPath);
         return image;
     }
 
@@ -119,5 +134,57 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
         Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
         imageView.setImageBitmap(bitmap);
+        attendance.setImage(currentPhotoPath);
+        createAttendanceJSON();
+    }
+
+    private void createAttendanceJSON() {
+        Gson gson = new Gson();
+        //Attendance attendance = new Attendance();
+        String json = gson.toJson(attendance);
+
+        FileOutputStream fileOutputStream = null;
+
+        try {
+            fileOutputStream = openFileOutput(Constants.JSON_ATTENDANCE_FILE, MODE_PRIVATE);
+            fileOutputStream.write(json.getBytes());
+
+            Log.i(LOG, getFilesDir() + "/" + Constants.JSON_ATTENDANCE_FILE);
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            if (fileOutputStream != null) {
+                try {
+                    fileOutputStream.close();
+                    readAttendanceJSON();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private void readAttendanceJSON() {
+        FileInputStream fileInputStream = null;
+
+        try {
+            fileInputStream = openFileInput(Constants.JSON_ATTENDANCE_FILE);
+            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
+            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
+            StringBuilder stringBuilder = new StringBuilder();
+            String text;
+
+            while ((text = bufferedReader.readLine()) != null) {
+                stringBuilder.append(text + "\n");
+            }
+
+            Log.i(LOG, stringBuilder.toString());
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
