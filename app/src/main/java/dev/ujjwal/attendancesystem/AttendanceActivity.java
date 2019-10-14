@@ -24,6 +24,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -134,13 +135,21 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
         Bitmap bitmap = BitmapFactory.decodeFile(currentPhotoPath, bmOptions);
         imageView.setImageBitmap(bitmap);
-        attendance.setImage(currentPhotoPath);
         createAttendanceJSON();
     }
 
     private void createAttendanceJSON() {
+//        Date date = new Date();
+//        long time = date.getTime(); //Time in Milliseconds
+//        Timestamp ts = new Timestamp(time);
+//        Log.i(LOG, ts.toString());
+        String timeStamp = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(new Date());
+        Log.i(LOG, timeStamp);
+
         Gson gson = new Gson();
         //Attendance attendance = new Attendance();
+        attendance.setImage(currentPhotoPath);
+        attendance.setTimestamp(timeStamp);
         String json = gson.toJson(attendance);
 
         FileOutputStream fileOutputStream = null;
