@@ -1,17 +1,17 @@
 package dev.ujjwal.attendancesystem;
 
 public class Attendance {
-    private String latitude;
-    private String longitude;
+    private Double latitude;
+    private Double longitude;
     private String address;
     private String timestamp;
     private String image;
 
-    public void setLatitude(String latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
-    public void setLongitude(String longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 
