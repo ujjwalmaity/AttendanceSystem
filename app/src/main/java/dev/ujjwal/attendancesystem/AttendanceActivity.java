@@ -228,7 +228,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         // Create an image file name
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         String imageFileName = "JPEG_" + timeStamp + "_";
-        File storageDir = getExternalFilesDir(Environment.DIRECTORY_PICTURES);
+        File storageDir = getExternalFilesDir("staff_attendance");
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
                 ".jpg",         /* suffix */
