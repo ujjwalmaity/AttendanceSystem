@@ -62,7 +62,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
     static final int REQUEST_TAKE_PHOTO = 1;
 
-    String currentPhotoPath;
+    String currentPhotoPath, imageName, timeStamp;
 
     final static int REQUEST_CHECK_SETTINGS = 199;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -222,8 +222,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
     private File createImageFile() throws IOException {
         // Create an image file name
-        String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
-        String imageFileName = "JPEG_" + timeStamp + "_";
+        timeStamp = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
+        String imageFileName = Constants.CENTRE_ID + "_" + timeStamp + "_";
         File storageDir = getExternalFilesDir("staff_attendance");
         File image = File.createTempFile(
                 imageFileName,  /* prefix */
@@ -234,6 +234,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
         Log.i(TAG, currentPhotoPath);
+        imageName = image.getName();
+        Log.i(TAG, imageName);
         return image;
     }
 
@@ -360,12 +362,12 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 //        long time = date.getTime(); //Time in Milliseconds
 //        Timestamp ts = new Timestamp(time);
 //        Log.i(TAG, ts.toString());
-        String timeStamp = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").format(new Date());
+//        String timeStamp = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
         Log.i(TAG, timeStamp);
 
         Gson gson = new Gson();
         Attendance attendance = new Attendance();
-        attendance.setImage(currentPhotoPath);
+        attendance.setImage(imageName);
         attendance.setTimestamp(timeStamp);
         attendance.setLatitude(latitude);
         attendance.setLongitude(longitude);
@@ -376,7 +378,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         try {
             // File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             File path = getExternalFilesDir("staff_attendance");
-            File myFile = new File(path, Constants.JSON_ATTENDANCE_FILE);
+            File myFile = new File(path, imageName + ".json");
             FileOutputStream fOut = new FileOutputStream(myFile);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
             myOutWriter.write(json);
