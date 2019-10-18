@@ -38,11 +38,9 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.Gson;
 
-import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.FileOutputStream;
 import java.io.File;
-import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -62,7 +60,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
     static final int REQUEST_TAKE_PHOTO = 1;
 
-    String currentPhotoPath, imageName, timeStamp;
+    String currentPhotoPath, imageFileNameWithoutExtension, timeStamp;
 
     final static int REQUEST_CHECK_SETTINGS = 199;
     private FusedLocationProviderClient fusedLocationProviderClient;
@@ -203,12 +201,8 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         // Ensure that there's a camera activity to handle the intent
         if (takePictureIntent.resolveActivity(getPackageManager()) != null) {
             // Create the File where the photo should go
-            File photoFile = null;
-            try {
-                photoFile = createImageFile();
-            } catch (IOException ex) {
-                // Error occurred while creating the File
-            }
+            File photoFile = createImageFile();
+
             // Continue only if the File was successfully created
             if (photoFile != null) {
                 Uri photoURI = FileProvider.getUriForFile(this,
@@ -220,22 +214,19 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         }
     }
 
-    private File createImageFile() throws IOException {
+    private File createImageFile() {
         // Create an image file name
-        timeStamp = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
-        String imageFileName = Constants.CENTRE_ID + "_" + timeStamp + "_";
         File storageDir = getExternalFilesDir("staff_attendance");
-        File image = File.createTempFile(
-                imageFileName,  /* prefix */
-                ".jpg",         /* suffix */
-                storageDir      /* directory */
-        );
+        timeStamp = new SimpleDateFormat("ddMMyyyy_HHmmss").format(new Date());
+        Log.i(TAG, timeStamp);
+        String imageFileName = Constants.CENTRE_ID + "_" + timeStamp;
+        imageFileNameWithoutExtension = imageFileName;
+        File image = new File(storageDir + File.separator + imageFileName + ".jpg");
 
         // Save a file: path for use with ACTION_VIEW intents
         currentPhotoPath = image.getAbsolutePath();
         Log.i(TAG, currentPhotoPath);
-        imageName = image.getName();
-        Log.i(TAG, imageName);
+        Log.i(TAG, image.getName());
         return image;
     }
 
@@ -358,16 +349,9 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
     }
 
     private void createAttendanceJSON() {
-//        Date date = new Date();
-//        long time = date.getTime(); //Time in Milliseconds
-//        Timestamp ts = new Timestamp(time);
-//        Log.i(TAG, ts.toString());
-//        String timeStamp = new SimpleDateFormat("ddMMyyyyHHmmss").format(new Date());
-        Log.i(TAG, timeStamp);
-
         Gson gson = new Gson();
         Attendance attendance = new Attendance();
-        attendance.setImage(imageName);
+        attendance.setImage(imageFileNameWithoutExtension + ".jpg");
         attendance.setTimestamp(timeStamp);
         attendance.setLatitude(latitude);
         attendance.setLongitude(longitude);
@@ -378,7 +362,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         try {
             // File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
             File path = getExternalFilesDir("staff_attendance");
-            File myFile = new File(path, imageName + ".json");
+            File myFile = new File(path, imageFileNameWithoutExtension + ".json");
             FileOutputStream fOut = new FileOutputStream(myFile);
             OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
             myOutWriter.write(json);
