@@ -16,7 +16,6 @@ import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Looper;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -39,13 +38,10 @@ import com.google.android.gms.location.LocationSettingsResult;
 import com.google.android.gms.location.LocationSettingsStatusCodes;
 import com.google.gson.Gson;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
+import java.io.FileOutputStream;
+import java.io.File;
 import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -153,7 +149,7 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
 
     @AfterPermissionGranted(123)
     private void methodRequiresTwoPermission() {
-        String[] perms = {Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
+        String[] perms = {Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA, Manifest.permission.ACCESS_FINE_LOCATION};
         if (EasyPermissions.hasPermissions(this, perms)) {
             // Already have permission, do the thing
             button.setOnClickListener(this);
@@ -377,48 +373,18 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
         String json = gson.toJson(attendance);
         isFileSaved = true;
 
-        FileOutputStream fileOutputStream = null;
-
         try {
-            fileOutputStream = openFileOutput(Constants.JSON_ATTENDANCE_FILE, MODE_PRIVATE);
-            fileOutputStream.write(json.getBytes());
-
-            Log.i(TAG, getFilesDir() + "/" + Constants.JSON_ATTENDANCE_FILE);
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } finally {
-            if (fileOutputStream != null) {
-                try {
-                    fileOutputStream.close();
-                    readAttendanceJSON();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
-
-    private void readAttendanceJSON() {
-        FileInputStream fileInputStream = null;
-
-        try {
-            fileInputStream = openFileInput(Constants.JSON_ATTENDANCE_FILE);
-            InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream);
-            BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-            StringBuilder stringBuilder = new StringBuilder();
-            String text;
-
-            while ((text = bufferedReader.readLine()) != null) {
-                stringBuilder.append(text + "\n");
-            }
-
-            Log.i(TAG, stringBuilder.toString());
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
-            e.printStackTrace();
+            // File path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
+            File path = getExternalFilesDir("staff_attendance");
+            File myFile = new File(path, Constants.JSON_ATTENDANCE_FILE);
+            FileOutputStream fOut = new FileOutputStream(myFile);
+            OutputStreamWriter myOutWriter = new OutputStreamWriter(fOut);
+            myOutWriter.write(json);
+            myOutWriter.close();
+            fOut.close();
+            Log.i(TAG, "JSON file saved!");
+        } catch (java.io.IOException e) {
+            Log.i(TAG, "ERROR - JSON could't be added");
         }
     }
 }
