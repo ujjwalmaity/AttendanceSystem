@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.PendingResult;
@@ -190,8 +191,12 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
     public void onClick(View view) {
         switch (view.getId()) {
             case R.id.attendance_capture_image:
-                isFileSaved = false;
-                dispatchTakePictureIntent();
+                if (latitude != null && longitude != null && address != null) {
+                    isFileSaved = false;
+                    dispatchTakePictureIntent();
+                } else {
+                    Toast.makeText(this, "Please wait until location fetch", Toast.LENGTH_SHORT).show();
+                }
                 break;
         }
     }
@@ -279,50 +284,11 @@ public class AttendanceActivity extends AppCompatActivity implements View.OnClic
                     Log.i(TAG, location.getLatitude() + "  " + location.getLongitude());
 
                     Geocoder geocoder = new Geocoder(getApplicationContext(), Locale.getDefault());
-                    String str = "";
                     try {
                         List<Address> listAddress = geocoder.getFromLocation(latitude, longitude, 1);
                         if (listAddress != null && listAddress.size() > 0) {
-                            //Toast.makeText(MainActivity.this, listAddress.get(0).toString(), Toast.LENGTH_SHORT).show();
-                            listAddress.get(0).getSubThoroughfare();
-                            listAddress.get(0).getLocality();
-                            listAddress.get(0).getPostalCode();
-                            listAddress.get(0).getCountryName();
-                            listAddress.get(0).getThoroughfare();
-
-                            listAddress.get(0).getSubAdminArea();
-                            listAddress.get(0).getPremises();
-                            listAddress.get(0).getLocale();
-                            listAddress.get(0).getFeatureName();
-                            listAddress.get(0).getAdminArea();
-                            listAddress.get(0).getSubLocality();
-
-
-                            if (listAddress.get(0).getPremises() != null) {
-                                str += listAddress.get(0).getPremises() + ", ";
-                            }
-                            if (listAddress.get(0).getSubLocality() != null) {
-                                str += listAddress.get(0).getSubLocality() + ", ";
-                            }
-                            if (listAddress.get(0).getSubThoroughfare() != null) {
-                                str += listAddress.get(0).getSubThoroughfare() + ", ";
-                            }
-                            if (listAddress.get(0).getThoroughfare() != null) {
-                                str += listAddress.get(0).getThoroughfare() + ", ";
-                            }
-                            if (listAddress.get(0).getLocality() != null) {
-                                str += listAddress.get(0).getLocality() + ", ";
-                            }
-                            if (listAddress.get(0).getAdminArea() != null) {
-                                str += listAddress.get(0).getAdminArea() + ", ";
-                            }
-                            if (listAddress.get(0).getCountryName() != null) {
-                                str += listAddress.get(0).getCountryName() + ", ";
-                            }
-                            if (listAddress.get(0).getPostalCode() != null) {
-                                str += listAddress.get(0).getPostalCode();
-                            }
-                            address = str;
+                            // Log.i(TAG, listAddress.get(0).toString());
+                            address = listAddress.get(0).getAddressLine(0);
                             Log.i(TAG, address);
                         }
                     } catch (Exception e) {
